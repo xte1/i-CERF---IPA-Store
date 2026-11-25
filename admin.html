@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>لوحة رفع وإدارة التطبيقات — i CERF</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0e14;
+      --card: #131924;
+      --border: #1f2937;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --success: #10b981;
+      --danger: #ef4444;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 20px; line-height: 1.6; }
+    .container { max-width: 960px; margin: 0 auto; }
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 18px 22px;
+      border-radius: 18px;
+      margin-bottom: 20px;
+    }
+    .top-bar h1 { font-size: 1.4rem; color: #60a5fa; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 22px;
+      margin-bottom: 20px;
+    }
+    .card h2 { font-size: 1.15rem; margin-bottom: 14px; color: #e2e8f0; }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+    label { display: block; font-size: 0.88rem; color: var(--muted); margin-bottom: 5px; font-weight: 600; }
+    input, select, textarea {
+      width: 100%;
+      background: #090c10;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 0.92rem;
+      outline: none;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--primary); }
+    textarea { min-height: 95px; resize: vertical; }
+    .btn {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 11px 18px;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.92rem;
+      transition: 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn:hover { background: var(--primary-hover); }
+    .btn-success { background: var(--success); }
+    .btn-danger { background: var(--danger); padding: 6px 12px; font-size: 0.82rem; }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .status-box {
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #6ee7b7;
+      margin-bottom: 16px;
+      font-size: 0.9rem;
+    }
+    .app-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      gap: 10px;
+    }
+    .app-row:last-child { border-bottom: none; }
+    .tabs { display: flex; gap: 10px; margin-bottom: 18px; }
+    .tab-btn {
+      background: #090c10;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 9px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .tab-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="top-bar">
+      <div>
+        <h1>لوحة رفع وإدارة التطبيقات — i CERF</h1>
+        <p style="color:var(--muted); font-size:0.88rem;">ارفع تطبيقاتك وأدر ملف IPA-AR.json مباشرة أو عبر GitHub API</p>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <a href="./index.html" class="btn btn-outline">العودة للمتجر</a>
+        <button class="btn btn-success" onclick="downloadJson()">تصدير IPA-AR.json المحدّث</button>
+      </div>
+    </div>
+
+    <div class="status-box" id="statusMsg">جاري تحميل بيانات المستودع الحالية...</div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('addTab', this)">1. إضافة / رفع تطبيق جديد</button>
+      <button class="tab-btn" onclick="switchTab('ghTab', this)">2. النشر التلقائي على GitHub (اختياري)</button>
+      <button class="tab-btn" onclick="switchTab('listTab', this)">3. إدارة التطبيقات المرفوعة</button>
+    </div>
+
+    <!-- Tab 1: Add App -->
+    <div id="addTab" class="card">
+      <h2>بيانات التطبيق الجديد</h2>
+      <div class="grid-2">
+        <div>
+          <label>اسم التطبيق *</label>
+          <input type="text" id="appName" placeholder="مثال: YouTube Pro" />
+        </div>
+        <div>
+          <label>معرف الحزمة (Bundle Identifier) *</label>
+          <input type="text" id="bundleId" dir="ltr" placeholder="com.google.ios.youtube" />
+        </div>
+        <div>
+          <label>رقم الإصدار *</label>
+          <input type="text" id="appVersion" dir="ltr" placeholder="19.45.2" />
+        </div>
+        <div>
+          <label>الفئة</label>
+          <select id="appCategory">
+            <option value="تواصل">تواصل</option>
+            <option value="ترفيه">ترفيه</option>
+            <option value="أدوات">أدوات</option>
+            <option value="ألعاب">ألعاب</option>
+            <option value="دراسة">دراسة</option>
+            <option value="ذكاء اصطناعي">ذكاء اصطناعي</option>
+            <option value="أخرى">أخرى</option>
+          </select>
+        </div>
+        <div>
+          <label>رابط تحميل ملف IPA المباشر *</label>
+          <input type="url" id="downloadUrl" dir="ltr" placeholder="https://github.com/.../releases/download/v1/app.ipa" />
+        </div>
+        <div>
+          <label>رابط أيقونة التطبيق (PNG/JPG)</label>
+          <input type="url" id="iconUrl" dir="ltr" placeholder="https://icerf.netlify.app/icons/app.png" />
+        </div>
+        <div>
+          <label>حجم الملف (بالميجابايت MB)</label>
+          <input type="number" id="appSizeMb" step="0.1" placeholder="85.5" />
+        </div>
+        <div>
+          <label>تطبيق موصى به؟</label>
+          <select id="appRecommended">
+            <option value="false">لا</option>
+            <option value="true">نعم</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-top:14px;">
+        <label>وصف التطبيق ومميزاته</label>
+        <textarea id="appDesc" placeholder="اكتب مميزات التطبيق هنا..."></textarea>
+      </div>
+
+      <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn" onclick="addApp()">+ إضافة التطبيق إلى المستودع</button>
+        <button class="btn btn-success" onclick="pushToGithub()" id="ghPushBtn" style="display:none;">إضافة ونشر فوراً إلى GitHub</button>
+      </div>
+    </div>
+
+    <!-- Tab 2: GitHub Auto-Sync -->
+    <div id="ghTab" class="card hidden">
+      <h2>الربط المباشر مع GitHub (للنشر بضغطة زر)</h2>
+      <p style="color:var(--muted); font-size:0.88rem; margin-bottom:14px;">
+        عند إدخال بيانات مستودعك على GitHub، ستتمكن من رفع ملفات <code>.ipa</code> وتحديث <code>IPA-AR.json</code> مباشرة من هذه الصفحة دون الحاجة لتنزيل الملف ورفعه يدوياً. (تُحفظ البيانات في متصفحك فقط).
+      </p>
+      <div class="grid-2">
+        <div>
+          <label>اسم مستخدم GitHub</label>
+          <input type="text" id="ghOwner" dir="ltr" placeholder="xte1 أو AbdTench" />
+        </div>
+        <div>
+          <label>اسم المستودع (Repository)</label>
+          <input type="text" id="ghRepo" dir="ltr" placeholder="icerf-repo" />
+        </div>
+        <div>
+          <label>مسار ملف JSON في المستودع</label>
+          <input type="text" id="ghPath" dir="ltr" value="IPA-AR.json" />
+        </div>
+        <div>
+          <label>GitHub Personal Access Token (صلاحية repo)</label>
+          <input type="password" id="ghToken" dir="ltr" placeholder="ghp_xxxxxxxxxxxx" />
+        </div>
+      </div>
+      <div style="margin-top:14px;">
+        <button class="btn" onclick="saveGhConfig()">حفظ إعدادات الربط</button>
+      </div>
+
+      <hr style="border-color:var(--border); margin:20px 0;" />
+      <h2>رفع ملف IPA مباشر إلى GitHub Releases</h2>
+      <div class="grid-2">
+        <div>
+          <label>اختر ملف .ipa من جهازك</label>
+          <input type="file" id="ipaFileInput" accept=".ipa" />
+        </div>
+        <div>
+          <label>اسم الوسم (Release Tag)</label>
+          <input type="text" id="releaseTag" dir="ltr" placeholder="v1.0.0" value="apps-v1" />
+        </div>
+      </div>
+      <div style="margin-top:12px;">
+        <button class="btn btn-success" onclick="uploadIpaToRelease()">رفع ملف الـ IPA واستخراج الرابط المباشر</button>
+      </div>
+    </div>
+
+    <!-- Tab 3: Manage Apps -->
+    <div id="listTab" class="card hidden">
+      <h2>آخر التطبيقات المضافة في المستودع</h2>
+      <input type="text" id="manageSearch" placeholder="ابحث لحذف أو معاينة تطبيق..." oninput="renderManageList()" style="margin-bottom:12px;" />
+      <div id="manageList"></div>
+    </div>
+  </div>
+
+  <script>
+    let repoData = {
+      name: "i CERF - IPA Store",
+      identifier: "com.icerf.store",
+      sourceURL: "https://icerf.netlify.app/IPA-AR.json",
+      iconURL: "https://icerf.netlify.app/icon.png",
+      sourceIcon: "https://icerf.netlify.app/icon.png",
+      website: "https://icerf.netlify.app",
+      social: {
+        website: "https://icerf.netlify.app",
+        telegram: "https://t.me/bavarite",
+        instagram: "https://instagram.com/eng_azawy",
+        tiktok: "https://www.tiktok.com/@eyesiq"
+      },
+      news: [],
+      apps: []
+    };
+
+    function switchTab(tabId, btn) {
+      ['addTab', 'ghTab', 'listTab'].forEach(id => document.getElementById(id).classList.add('hidden'));
+      document.getElementById(tabId).classList.remove('hidden');
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      if (tabId === 'listTab') renderManageList();
+    }
+
+    function updateStatus(msg) {
+      document.getElementById('statusMsg').textContent = msg;
+    }
+
+    async function loadRepo() {
+      const saved = localStorage.getItem('icerf_repo_cache');
+      if (saved) {
+        repoData = JSON.parse(saved);
+        updateStatus(`تم تحميل النسخة المحفوظة محلياً (${repoData.apps.length} تطبيق).`);
+      }
+      try {
+        const res = await fetch('./IPA-AR.json');
+        if (res.ok && !saved) {
+          repoData = await res.json();
+          updateStatus(`تم تحميل ملف IPA-AR.json بنجاح (${repoData.apps.length} تطبيق).`);
+        }
+      } catch (e) {}
+      loadGhConfig();
+    }
+
+    function addApp() {
+      const name = document.getElementById('appName').value.trim();
+      const bundleId = document.getElementById('bundleId').value.trim();
+      const version = document.getElementById('appVersion').value.trim() || '1.0';
+      const downloadURL = document.getElementById('downloadUrl').value.trim();
+      const iconURL = document.getElementById('iconUrl').value.trim() || 'https://icerf.netlify.app/icon.png';
+      const category = document.getElementById('appCategory').value;
+      const desc = document.getElementById('appDesc').value.trim();
+      const sizeMb = parseFloat(document.getElementById('appSizeMb').value) || 0;
+      const sizeBytes = Math.round(sizeMb * 1024 * 1024);
+      const recommended = document.getElementById('appRecommended').value === 'true';
+      const today = new Date().toISOString().split('T')[0];
+
+      if (!name || !bundleId || !downloadURL) {
+        alert('يرجى إدخال اسم التطبيق ومعرف الحزمة ورابط التحميل المباشر.');
+        return null;
+      }
+
+      const newApp = {
+        id: 'app-' + Date.now(),
+        name: name,
+        bundleIdentifier: bundleId,
+        bundleId: bundleId,
+        iconURL: iconURL,
+        localizedDescription: desc,
+        category: category,
+        recommended: recommended,
+        versions: [
+          {
+            version: version,
+            downloadURL: downloadURL,
+            date: today,
+            size: sizeBytes
+          }
+        ],
+        version: version,
+        versionDate: today,
+        downloadURL: downloadURL,
+        ipaUrl: downloadURL,
+        size: sizeBytes,
+        addedAt: today,
+        updatedAt: today
+      };
+
+      repoData.apps.unshift(newApp);
+      localStorage.setItem('icerf_repo_cache', JSON.stringify(repoData));
+      updateStatus(`تمت إضافة "${name}" بنجاح! إجمالي التطبيقات الآن: ${repoData.apps.length}.`);
+      alert(`تمت إضافة "${name}" إلى القائمة. يمكنك الآن تصدير ملف IPA-AR.json أو نشره مباشرة إلى GitHub.`);
+      return newApp;
+    }
+
+    function downloadJson() {
+      const blob = new Blob([JSON.stringify(repoData, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'IPA-AR.json';
+      a.click();
+    }
+
+    function saveGhConfig() {
+      const cfg = {
+        owner: document.getElementById('ghOwner').value.trim(),
+        repo: document.getElementById('ghRepo').value.trim(),
+        path: document.getElementById('ghPath').value.trim() || 'IPA-AR.json',
+        token: document.getElementById('ghToken').value.trim()
+      };
+      localStorage.setItem('icerf_gh_cfg', JSON.stringify(cfg));
+      loadGhConfig();
+      alert('تم حفظ إعدادات GitHub في المتصفح.');
+    }
+
+    function loadGhConfig() {
+      const raw = localStorage.getItem('icerf_gh_cfg');
+      if (!raw) return;
+      const cfg = JSON.parse(raw);
+      document.getElementById('ghOwner').value = cfg.owner || '';
+      document.getElementById('ghRepo').value = cfg.repo || '';
+      document.getElementById('ghPath').value = cfg.path || 'IPA-AR.json';
+      document.getElementById('ghToken').value = cfg.token || '';
+      if (cfg.owner && cfg.repo && cfg.token) {
+        document.getElementById('ghPushBtn').style.display = 'inline-block';
+      }
+    }
+
+    async function pushToGithub() {
+      const added = addApp();
+      if (!added) return;
+      const cfg = JSON.parse(localStorage.getItem('icerf_gh_cfg') || '{}');
+      if (!cfg.owner || !cfg.repo || !cfg.token) {
+        alert('يرجى إكمال بيانات الربط في تبويب "النشر التلقائي على GitHub".');
+        return;
+      }
+      updateStatus('جاري رفع التحديث إلى GitHub...');
+      const apiUrl = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${cfg.path}`;
+      try {
+        let sha = null;
+        const getRes = await fetch(apiUrl, { headers: { Authorization: `Bearer ${cfg.token}` } });
+        if (getRes.ok) {
+          const existing = await getRes.json();
+          sha = existing.sha;
+        }
+        const contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(repoData, null, 2))));
+        const putRes = await fetch(apiUrl, {
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${cfg.token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            message: `Add ${added.name} via i CERF Admin`,
+            content: contentBase64,
+            ...(sha ? { sha } : {})
+          })
+        });
+        if (putRes.ok) {
+          updateStatus(`تم نشر "${added.name}" وتحديث IPA-AR.json على GitHub بنجاح!`);
+          alert('تم النشر على GitHub بنجاح!');
+        } else {
+          const err = await putRes.json();
+          alert('خطأ من GitHub: ' + (err.message || putRes.status));
+        }
+      } catch (e) {
+        alert('فشل الاتصال بـ GitHub: ' + e.message);
+      }
+    }
+
+    async function uploadIpaToRelease() {
+      const fileInput = document.getElementById('ipaFileInput');
+      const tag = document.getElementById('releaseTag').value.trim() || 'apps-v1';
+      const cfg = JSON.parse(localStorage.getItem('icerf_gh_cfg') || '{}');
+      if (!fileInput.files.length) return alert('اختر ملف .ipa أولاً.');
+      if (!cfg.owner || !cfg.repo || !cfg.token) return alert('أدخل بيانات GitHub أولاً.');
+
+      const file = fileInput.files[0];
+      updateStatus(`جاري رفع ${file.name} (${(file.size / 1048576).toFixed(1)} MB) إلى GitHub Releases...`);
+
+      try {
+        let relRes = await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/releases/tags/${tag}`, {
+          headers: { Authorization: `Bearer ${cfg.token}` }
+        });
+        let release;
+        if (relRes.ok) {
+          release = await relRes.json();
+        } else {
+          const createRes = await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/releases`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${cfg.token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tag_name: tag, name: `i CERF Apps (${tag})` })
+          });
+          release = await createRes.json();
+        }
+
+        const uploadUrl = release.upload_url.replace('{?name,label}', `?name=${encodeURIComponent(file.name)}`);
+        const upRes = await fetch(uploadUrl, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${cfg.token}`,
+            'Content-Type': 'application/octet-stream'
+          },
+          body: file
+        });
+        const asset = await upRes.json();
+        if (asset.browser_download_url) {
+          document.getElementById('downloadUrl').value = asset.browser_download_url;
+          document.getElementById('appSizeMb').value = (file.size / (1024 * 1024)).toFixed(2);
+          updateStatus('تم رفع ملف IPA بنجاح وتعبئة رابط التحميل المباشر تلقائياً!');
+          alert('تم الرفع بنجاح! انتقل لتبويب إضافة التطبيق لإكمال الاسم والنشر.');
+        } else {
+          alert('تعذر الرفع: ' + JSON.stringify(asset));
+        }
+      } catch (e) {
+        alert('خطأ أثناء رفع الملف: ' + e.message);
+      }
+    }
+
+    function renderManageList() {
+      const q = document.getElementById('manageSearch').value.trim().toLowerCase();
+      const list = repoData.apps.filter(a => (a.name || '').toLowerCase().includes(q)).slice(0, 40);
+      document.getElementById('manageList').innerHTML = list.map(app => `
+        <div class="app-row">
+          <div>
+            <strong>${app.name}</strong> <span style="color:var(--muted); font-size:0.82rem;">(${app.version})</span>
+            <div style="font-size:0.78rem; color:var(--muted); direction:ltr; text-align:right;">${app.downloadURL || ''}</div>
+          </div>
+          <button class="btn btn-danger" onclick="deleteApp('${app.id}')">حذف</button>
+        </div>
+      `).join('');
+    }
+
+    function deleteApp(id) {
+      if (!confirm('هل تريد حذف هذا التطبيق من القائمة؟')) return;
+      repoData.apps = repoData.apps.filter(a => a.id !== id);
+      localStorage.setItem('icerf_repo_cache', JSON.stringify(repoData));
+      renderManageList();
+      updateStatus(`تم الحذف. عدد التطبيقات الحالي: ${repoData.apps.length}.`);
+    }
+
+    loadRepo();
+  </script>
+</body>
+</html>

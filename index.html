@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>i CERF — متجر تطبيقات IPA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0e14;
+      --card: #131924;
+      --border: #1f2937;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --accent: #06b6d4;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.6; }
+    .container { max-width: 1120px; margin: 0 auto; padding: 20px; }
+    header {
+      background: linear-gradient(135deg, rgba(59,130,246,0.16), rgba(6,182,212,0.12));
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px 24px;
+      margin-bottom: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .brand h1 { font-size: 2rem; font-weight: 800; background: linear-gradient(90deg, #60a5fa, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .brand p { color: var(--muted); font-size: 0.95rem; margin-top: 4px; }
+    .socials { display: flex; flex-wrap: wrap; gap: 10px; }
+    .social-btn {
+      text-decoration: none;
+      color: var(--text);
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      transition: 0.2s;
+    }
+    .social-btn:hover { border-color: var(--primary); transform: translateY(-2px); }
+    .social-btn.admin-link { background: var(--primary); border-color: var(--primary); }
+    .repo-bar {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px 18px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .repo-url {
+      background: #090c10;
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      color: #38bdf8;
+      font-family: monospace;
+      font-size: 0.9rem;
+      direction: ltr;
+      overflow-x: auto;
+    }
+    .btn {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 9px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.9rem;
+      transition: 0.2s;
+    }
+    .btn:hover { background: var(--primary-hover); }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .search-input, .cat-select {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 11px 16px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      outline: none;
+    }
+    .search-input { flex: 1; min-width: 240px; }
+    .search-input:focus, .cat-select:focus { border-color: var(--primary); }
+    .stats { color: var(--muted); font-size: 0.9rem; margin-bottom: 14px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 16px;
+    }
+    .app-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+      transition: 0.2s;
+    }
+    .app-card:hover { border-color: #334155; transform: translateY(-2px); }
+    .app-top { display: flex; align-items: center; gap: 12px; }
+    .app-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      object-fit: cover;
+      background: #1e293b;
+      flex-shrink: 0;
+    }
+    .app-title { font-weight: 700; font-size: 1.05rem; }
+    .app-meta { font-size: 0.8rem; color: var(--muted); }
+    .app-desc {
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      white-space: pre-line;
+    }
+    .app-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+    .badge {
+      background: rgba(59,130,246,0.15);
+      color: #60a5fa;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+    .dl-btn {
+      text-decoration: none;
+      background: var(--primary);
+      color: #fff;
+      padding: 6px 14px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+    .load-more { display: block; margin: 28px auto; padding: 12px 28px; }
+    footer {
+      margin-top: 48px;
+      padding: 24px 0;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    footer a { color: #60a5fa; text-decoration: none; margin: 0 8px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <h1>i CERF</h1>
+        <p>المستودع الرسمي لتطبيقات وألعاب iOS المعدلة بصيغة IPA</p>
+      </div>
+      <div class="socials">
+        <a class="social-btn" href="https://t.me/bavarite" target="_blank">تليجرام @bavarite</a>
+        <a class="social-btn" href="https://instagram.com/eng_azawy" target="_blank">انستجرام @eng_azawy</a>
+        <a class="social-btn" href="https://www.tiktok.com/@eyesiq" target="_blank">تيك توك @eyesiq</a>
+        <a class="social-btn admin-link" href="./admin.html">+ لوحة رفع التطبيقات</a>
+      </div>
+    </header>
+
+    <div class="repo-bar">
+      <div>
+        <strong>رابط السورس (المستودع):</strong>
+        <span class="repo-url" id="repoUrl">https://icerf.netlify.app/IPA-AR.json</span>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn" onclick="copyRepo()">نسخ رابط السورس</button>
+        <a class="social-btn" href="esign://addsource?url=https://icerf.netlify.app/IPA-AR.json">إضافة لـ Esign</a>
+        <a class="social-btn" href="feather://source/https://icerf.netlify.app/IPA-AR.json">إضافة لـ Feather</a>
+      </div>
+    </div>
+
+    <div class="controls">
+      <input type="text" id="searchInput" class="search-input" placeholder="ابحث باسم التطبيق أو الوصف أو الحزمة..." oninput="filterApps()" />
+      <select id="categorySelect" class="cat-select" onchange="filterApps()">
+        <option value="all">جميع الفئات</option>
+      </select>
+    </div>
+
+    <div class="stats" id="statsText">جاري تحميل التطبيقات...</div>
+    <div class="grid" id="appsGrid"></div>
+    <button class="btn load-more" id="loadMoreBtn" onclick="renderMore()" style="display:none;">عرض المزيد</button>
+
+    <footer>
+      <p>جميع الحقوق محفوظة &copy; 2026 <strong>i CERF</strong> — <a href="https://icerf.netlify.app">icerf.netlify.app</a></p>
+      <p style="margin-top:6px;">
+        <a href="https://t.me/bavarite" target="_blank">Telegram: @bavarite</a> |
+        <a href="https://instagram.com/eng_azawy" target="_blank">Instagram: @eng_azawy</a> |
+        <a href="https://www.tiktok.com/@eyesiq" target="_blank">TikTok: @eyesiq</a>
+      </p>
+    </footer>
+  </div>
+
+  <script>
+    let allApps = [];
+    let filteredApps = [];
+    let visibleCount = 30;
+
+    function formatSize(bytes) {
+      if (!bytes) return '';
+      const mb = bytes / (1024 * 1024);
+      return mb >= 1024 ? (mb / 1024).toFixed(2) + ' GB' : mb.toFixed(1) + ' MB';
+    }
+
+    function copyRepo() {
+      const url = document.getElementById('repoUrl').textContent;
+      navigator.clipboard.writeText(url);
+      alert('تم نسخ رابط مستودع i CERF بنجاح:\n' + url);
+    }
+
+    async function init() {
+      try {
+        const res = await fetch('./IPA-AR.json');
+        const data = await res.json();
+        allApps = data.apps || [];
+        const cats = [...new Set(allApps.map(a => a.category).filter(Boolean))];
+        const sel = document.getElementById('categorySelect');
+        cats.forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c;
+          opt.textContent = c;
+          sel.appendChild(opt);
+        });
+        filterApps();
+      } catch (e) {
+        document.getElementById('statsText').textContent = 'تعذر تحميل ملف IPA-AR.json. تأكد من رفعه بجانب index.html على الاستضافة.';
+      }
+    }
+
+    function filterApps() {
+      const q = document.getElementById('searchInput').value.trim().toLowerCase();
+      const cat = document.getElementById('categorySelect').value;
+      filteredApps = allApps.filter(app => {
+        const matchCat = cat === 'all' || app.category === cat;
+        const text = `${app.name || ''} ${app.localizedDescription || ''} ${app.bundleIdentifier || ''}`.toLowerCase();
+        return matchCat && text.includes(q);
+      });
+      visibleCount = 30;
+      renderApps();
+    }
+
+    function renderMore() {
+      visibleCount += 30;
+      renderApps();
+    }
+
+    function renderApps() {
+      const grid = document.getElementById('appsGrid');
+      const slice = filteredApps.slice(0, visibleCount);
+      document.getElementById('statsText').textContent = `عرض ${slice.length} من أصل ${filteredApps.length} تطبيق`;
+      grid.innerHTML = slice.map(app => `
+        <div class="app-card">
+          <div>
+            <div class="app-top">
+              <img class="app-icon" src="${app.iconURL || ''}" onerror="this.src='https://via.placeholder.com/60/1e293b/60a5fa?text=IPA'" alt="${app.name || ''}">
+              <div>
+                <div class="app-title">${app.name || 'بدون اسم'}</div>
+                <div class="app-meta">الإصدار ${app.version || '1.0'} • ${formatSize(app.size)}</div>
+              </div>
+            </div>
+            <p class="app-desc" style="margin-top:10px;">${app.localizedDescription || ''}</p>
+          </div>
+          <div class="app-footer">
+            <span class="badge">${app.category || 'عام'}</span>
+            <a class="dl-btn" href="${app.downloadURL || app.ipaUrl || '#'}" target="_blank">تحميل IPA</a>
+          </div>
+        </div>
+      `).join('');
+      document.getElementById('loadMoreBtn').style.display = visibleCount < filteredApps.length ? 'block' : 'none';
+    }
+
+    init();
+  </script>
+</body>
+</html>
